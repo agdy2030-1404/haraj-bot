@@ -31,20 +31,7 @@ export const processHarajMessages = createAsyncThunk(
   }
 );
 
-// جلب إعلانات الحراج
-export const fetchHarajAds = createAsyncThunk(
-  "message/fetchAds",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await harajService.getUserAds();
-      return response;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "فشل في جلب إعلانات الحراج"
-      );
-    }
-  }
-);
+
 
 export const updateUnifiedMessage = createAsyncThunk(
   "message/updateUnifiedMessage",
@@ -119,10 +106,6 @@ const harajSlice = createSlice({
           action.payload.data?.message || action.payload.data;
       })
 
-      // الإعلانات
-      .addCase(fetchHarajAds.fulfilled, (state, action) => {
-        state.ads = action.payload.data || [];
-      });
   },
 });
 

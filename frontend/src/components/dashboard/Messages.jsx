@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { 
   fetchHarajMessages, 
   processHarajMessages, 
-  fetchHarajAds,
   clearHarajError,
   updateUnifiedMessage
 } from '@/redux/messages/messageSlice';
@@ -14,15 +13,13 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const HarajMessages = () => {
   const dispatch = useDispatch();
-  const { messages, loading, processing, error, ads, unifiedMessage } = useSelector((state) => state.messages);
+  const { messages, loading, processing, error, unifiedMessage } = useSelector((state) => state.messages);
   const [selectedAdId, setSelectedAdId] = useState('all');
   const [statusFilter, setStatusFilter] = useState('');
   const [showMessageEditor, setShowMessageEditor] = useState(false);
   const [messageContent, setMessageContent] = useState(unifiedMessage || '');
-
   useEffect(() => {
     dispatch(fetchHarajMessages({ status: statusFilter, page: 1, limit: 20 }));
-    dispatch(fetchHarajAds());
   }, [dispatch, statusFilter]);
 
   useEffect(() => {
@@ -91,6 +88,17 @@ const HarajMessages = () => {
     { value: 'read', label: 'مقروء' },
     { value: 'archived', label: 'مؤرشف' }
   ];
+
+  if (!messages) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-8 px-4 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+        <p className="mt-4 text-gray-600">جاري تحميل البيانات...</p>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-8 px-4">
@@ -167,21 +175,7 @@ const HarajMessages = () => {
 
             {/* Filters and Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">حالة الرسالة</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {statusOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+            
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">الإعلان</label>
                 <select
@@ -190,11 +184,7 @@ const HarajMessages = () => {
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">جميع الإعلانات</option>
-                  {ads.map((ad) => (
-                    <option key={ad.adId} value={ad.adId}>
-                      {ad.title} - {ad.adId}
-                    </option>
-                  ))}
+                  
                 </select>
               </div>
 
@@ -281,7 +271,6 @@ const HarajMessages = () => {
                   </div>
                   <div>
                     <p className="text-sm text-purple-600">الإعلانات</p>
-                    <p className="text-2xl font-bold text-purple-800">{ads.length}</p>
                   </div>
                 </div>
               </div>

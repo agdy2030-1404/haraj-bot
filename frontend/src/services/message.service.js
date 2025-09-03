@@ -28,13 +28,6 @@ const harajService = {
     return res.data;
   },
 
-  // جلب إعلانات المستخدم من الحراج
-  getUserAds: async () => {
-    const res = await axios.get(`${API_URL}/api/message/ads`, {
-      withCredentials: true,
-    });
-    return res.data;
-  },
 
   updateUnifiedMessage: async (messageContent) => {
     const res = await axios.put(
