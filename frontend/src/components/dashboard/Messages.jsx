@@ -6,16 +6,19 @@ import {
   fetchHarajMessages, 
   processHarajMessages, 
   fetchHarajAds,
-  clearHarajError 
+  clearHarajError,
+  updateUnifiedMessage
 } from '@/redux/messages/messageSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const HarajMessages = () => {
   const dispatch = useDispatch();
-  const { messages, loading, processing, error, ads } = useSelector((state) => state.messages);
+  const { messages, loading, processing, error, ads, unifiedMessage } = useSelector((state) => state.messages);
   const [selectedAdId, setSelectedAdId] = useState('all');
   const [statusFilter, setStatusFilter] = useState('');
+  const [showMessageEditor, setShowMessageEditor] = useState(false);
+  const [messageContent, setMessageContent] = useState(unifiedMessage || '');
 
   useEffect(() => {
     dispatch(fetchHarajMessages({ status: statusFilter, page: 1, limit: 20 }));
@@ -38,12 +41,36 @@ const HarajMessages = () => {
     }
   }, [error, dispatch]);
 
+  useEffect(() => {
+    if (unifiedMessage) {
+      setMessageContent(unifiedMessage);
+    }
+  }, [unifiedMessage]);
+
   const handleProcess = () => {
     const adId = selectedAdId === 'all' ? null : selectedAdId;
     dispatch(processHarajMessages(adId)).then((result) => {
       if (!result.error) {
         dispatch(fetchHarajMessages({ status: statusFilter, page: 1, limit: 20 }));
         toast.success('تم معالجة رسائل الحراج بنجاح!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+          rtl: true,
+        });
+      }
+    });
+  };
+
+  const handleSaveMessage = () => {
+    dispatch(updateUnifiedMessage(messageContent)).then((result) => {
+      if (!result.error) {
+        setShowMessageEditor(false);
+        toast.success('تم حفظ الرسالة الموحدة بنجاح!', {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -89,6 +116,55 @@ const HarajMessages = () => {
 
           {/* Content */}
           <div className="p-6">
+            {/* الرسالة الموحدة */}
+            <div className="mb-6 p-5 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-cyan-800">الرسالة الموحدة للرد التلقائي</h3>
+                <button
+                  onClick={() => setShowMessageEditor(!showMessageEditor)}
+                  className="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-colors duration-200 flex items-center gap-2 text-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  {showMessageEditor ? 'إلغاء التعديل' : 'تعديل الرسالة'}
+                </button>
+              </div>
+
+              {showMessageEditor ? (
+                <div className="space-y-4">
+                  <textarea
+                    value={messageContent}
+                    onChange={(e) => setMessageContent(e.target.value)}
+                    rows="4"
+                    className="w-full p-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-200"
+                    placeholder="أدخل محتوى الرسالة الموحدة للرد التلقائي..."
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleSaveMessage}
+                      className="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-colors duration-200"
+                    >
+                      حفظ الرسالة
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowMessageEditor(false);
+                        setMessageContent(unifiedMessage);
+                      }}
+                      className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white p-4 rounded-lg border border-cyan-100">
+                  <p className="text-gray-700 leading-relaxed">{unifiedMessage}</p>
+                </div>
+              )}
+            </div>
+
             {/* Filters and Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
               <div>

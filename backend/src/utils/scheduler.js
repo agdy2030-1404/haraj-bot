@@ -142,15 +142,7 @@ class Scheduler {
   }
 
   // تشغيل المجدول عند بدء التشغيل
-  async start() {
-    console.log("Starting scheduler...");
-    await this.scheduleAdUpdates();
-
-    // تحديث الجدول كل ساعة للتحقق من الإعلانات الجديدة
-    setInterval(() => {
-      this.scheduleAdUpdates();
-    }, 60 * 60 * 1000);
-  }
+  
 }
 
 export default new Scheduler();

@@ -528,159 +528,9 @@ class botService {
         await this.ensureBotRunning();
       }
 
-      return await this.getMyAds2();
+      return await this.getMyAds();
     } catch (error) {
       console.error("Error extracting ads data:", error);
-      return [];
-    }
-  }
-
-  // bot.service.js - الجزء المحسن لاستخراج صور الإعلانات
-  async getMyAds2() {
-    try {
-      console.log("Getting my ads from profile page...");
-
-      // الانتقال إلى صفحة المستخدم
-      if (!(await this.navigateToUserAds())) {
-        throw new Error("Failed to navigate to user ads page");
-      }
-
-      // انتظار تحميل الإعلانات
-      await this.page.waitForSelector('[data-testid="post-item"]', {
-        timeout: 15000,
-      });
-
-      // استخراج بيانات الإعلانات من الصفحة الحالية فقط
-      const ads = await this.page.evaluate(() => {
-        const adElements = document.querySelectorAll(
-          '[data-testid="post-item"]'
-        );
-        const adsData = [];
-
-        adElements.forEach((ad) => {
-          try {
-            // استخراج رابط الإعلان ورقمه
-            const linkElement = ad.querySelector(
-              '[data-testid="post-title-link"]'
-            );
-            if (!linkElement) return;
-
-            const href = linkElement.getAttribute("href");
-            const adIdMatch = href.match(/\/(\d+)\//);
-            if (!adIdMatch) return;
-
-            const adId = adIdMatch[1];
-            const fullLink = `https://haraj.com.sa${href}`;
-
-            // استخراج العنوان
-            const titleElement = linkElement.querySelector("h3");
-            const title = titleElement ? titleElement.textContent.trim() : "";
-
-            // استخراج السعر (من العناصر المختلفة)
-            let price = "";
-            const priceElements = ad.querySelectorAll(
-              '.text-text-title, [class*="price"]'
-            );
-            for (const el of priceElements) {
-              const text = el.textContent.trim();
-              if (
-                text.includes("ريال") ||
-                text.includes("ر.س") ||
-                /\d/.test(text)
-              ) {
-                price = text;
-                break;
-              }
-            }
-
-            // استخراج الموقع
-            const locationElement = ad.querySelector('[href*="/city/"]');
-            const location = locationElement
-              ? locationElement.textContent.trim()
-              : "";
-
-            // استخراج التاريخ
-            const dateElement = ad.querySelector(".text-text-regular");
-            const date = dateElement ? dateElement.textContent.trim() : "";
-
-            // استخراج الصورة الرئيسية للإعلان - التحديث الهام هنا
-            // نبحث عن الصورة داخل العنصر الذي يحتوي على صورة الإعلان وليس صورة المستخدم
-            let imageUrl = "";
-            const imageContainer = ad.querySelector(
-              'a[href*="/"][data-discover="true"]'
-            );
-            if (imageContainer) {
-              const adImage = imageContainer.querySelector("img");
-              if (adImage) {
-                imageUrl = adImage.src;
-
-                // تحسين جودة الصورة بإزالة الأحجام الصغيرة من الرابط
-                if (imageUrl.includes("-140x140.")) {
-                  imageUrl = imageUrl.replace("-140x140.", "-900x1316.");
-                }
-              }
-            }
-
-            // إذا لم نجد صورة الإعلان، نبحث عن أي صورة ليست صورة المستخدم
-            if (!imageUrl) {
-              const allImages = ad.querySelectorAll("img");
-              for (const img of allImages) {
-                // نتجنب الصور الدائرية (صور الملف الشخصي)
-                const parent = img.closest("div");
-                if (parent && !parent.classList.contains("rounded-full")) {
-                  imageUrl = img.src;
-                  break;
-                }
-              }
-            }
-
-            // استخراج عدد المشاهدات (إن وجد)
-            let views = 0;
-            const viewsElement = ad.querySelector('[data-icon="eye"]');
-            if (viewsElement) {
-              const viewsText = viewsElement.closest("div").textContent.trim();
-              views = parseInt(viewsText.replace(/\D/g, "")) || 0;
-            }
-
-            // استخراج عدد التعليقات
-            let commentsCount = 0;
-            const commentsElement = ad.querySelector(
-              '[data-icon="comments-alt"]'
-            );
-            if (commentsElement) {
-              const countText = commentsElement
-                .closest("div")
-                .textContent.trim();
-              commentsCount = parseInt(countText.replace(/\D/g, "")) || 0;
-            }
-
-            adsData.push({
-              adId,
-              title,
-              price,
-              location,
-              date,
-              imageUrl,
-              link: fullLink,
-              views,
-              commentsCount,
-              status: "active",
-              hasImage: !!imageUrl,
-              isPromoted: !!ad.querySelector('[class*="promoted"]'),
-              extractedAt: new Date().toISOString(),
-            });
-          } catch (error) {
-            console.error("Error processing ad:", error);
-          }
-        });
-
-        return adsData;
-      });
-
-      console.log(`Found ${ads.length} ads on profile page`);
-      return ads;
-    } catch (error) {
-      console.error("Error getting ads from profile:", error);
       return [];
     }
   }
@@ -983,7 +833,7 @@ class botService {
       console.log("Starting to update all ads...");
 
       // جلب جميع الإعلانات
-      const ads = await this.getMyAds2();
+      const ads = await this.getMyAds();
 
       if (ads.length === 0) {
         console.log("No ads found to update");
@@ -1321,56 +1171,11 @@ class botService {
   }
 
   async selectReplyTemplate(message) {
-    // قوالب الردود المحسنة لحراج
-    const templates = {
-      greeting:
-        "السلام عليكم ورحمة الله وبركاته 🌹\nأهلاً وسهلاً، كيف يمكنني مساعدتك؟",
-      price:
-        "وعليكم السلام ورحمة الله 🌹\nالسعر المذكور في الإعلان. هل ترغب في التفاوض؟",
-      availability:
-        "أهلاً بك 🌹\nنعم، الإعلان لا يزال متاح. هل ترغب في المعاينة؟",
-      location:
-        "وعليكم السلام 🌹\nالمكان موضح في الخريطة في الإعلان. هل تحتاج إلى اتجاهات محددة؟",
-      contact:
-        "أهلاً وسهلاً 🌹\nيمكنك التواصل معي على الرقم الموجود في الإعلان للتفاصيل.",
-      default: "السلام عليكم 🌹\nشكراً لاهتمامك بالإعلان. كيف يمكنني مساعدتك؟",
-    };
+    // الرسالة الموحدة لجميع الردود
+    const unifiedMessage =
+      "السلام عليكم ورحمة الله يعطيكم العافية لاهنتوا رقم الوسيط في الإعلان أرجو التواصل معاه ولكم جزيل الشكر والتقدير-إدارة منصة صانع العقود للخدمات العقارية";
 
-    const content = message.messageContent.toLowerCase();
-
-    if (
-      content.includes("سعر") ||
-      content.includes("ثمن") ||
-      content.includes("كم")
-    ) {
-      return templates.price;
-    } else if (
-      content.includes("متاح") ||
-      content.includes("موجود") ||
-      content.includes("لازال")
-    ) {
-      return templates.availability;
-    } else if (
-      content.includes("مكان") ||
-      content.includes("موقع") ||
-      content.includes("عنوان")
-    ) {
-      return templates.location;
-    } else if (
-      content.includes("رقم") ||
-      content.includes("اتصال") ||
-      content.includes("تواصل")
-    ) {
-      return templates.contact;
-    } else if (
-      content.includes("السلام") ||
-      content.includes("مرحب") ||
-      content.includes("اهلا")
-    ) {
-      return templates.greeting;
-    } else {
-      return templates.default;
-    }
+    return unifiedMessage;
   }
 
   async processMessages(adId = null, userId = null) {
@@ -1500,6 +1305,7 @@ class botService {
   }
 
   determineMessageType(messageContent) {
+    // بما أننا نستخدم رداً موحداً، يمكننا تحديد نوع عام أو الحفاظ على التصنيف لأغراض التحليل
     const content = messageContent.toLowerCase();
 
     if (content.includes("سعر") || content.includes("ثمن")) {

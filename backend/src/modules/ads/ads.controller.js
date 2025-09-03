@@ -5,65 +5,19 @@ import botService from "../bot/bot.service.js";
 
 export const fetchUserAds = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    // جلب الإعلانات من الموقع فقط
+    const ads = await botService.getMyAds();
 
-    // جلب الإعلانات من صفحة المستخدم
-    const ads = await botService.getMyAds2();
-
-    // حفظ الإعلانات في قاعدة البيانات
-    const savedAds = [];
-    for (const adData of ads) {
-      try {
-        // تنظيف البيانات قبل الحفظ
-        const cleanAdData = {
-          adId: adData.adId,
-          title: adData.title,
-          price: adData.price,
-          imageUrl: adData.imageUrl,
-          link: adData.link,
-          location: adData.location,
-          status: "active",
-          userId: userId,
-          commentsCount: adData.commentsCount || 0,
-          views: adData.views || 0,
-          metadata: {
-            date: adData.date,
-            extractionDate: new Date(),
-            images: adData.imageUrl ? [adData.imageUrl] : [],
-            isPromoted: adData.isPromoted || false,
-            extractedAt: adData.extractedAt || new Date().toISOString(),
-          },
-        };
-
-        // التحقق إذا كان الإعلان موجوداً بالفعل
-        let ad = await Ad.findOne({ adId: cleanAdData.adId, userId });
-
-        if (ad) {
-          // تحديث الإعلان الموجود
-          ad = await Ad.findOneAndUpdate(
-            { adId: cleanAdData.adId, userId },
-            {
-              ...cleanAdData,
-              lastUpdated: new Date(),
-              views: adData.views > ad.views ? adData.views : ad.views,
-            },
-            { new: true }
-          );
-        } else {
-          // إنشاء إعلان جديد
-          ad = await Ad.create(cleanAdData);
-        }
-
-        savedAds.push(ad);
-      } catch (dbError) {
-        console.error(`Error saving ad ${adData.adId}:`, dbError);
-      }
-    }
+    // إضافة status افتراضي إذا لم يكن موجوداً
+    const adsWithStatus = ads.map(ad => ({
+      ...ad,
+      status: ad.status || "active" // إضافة status افتراضي
+    }));
 
     res.status(200).json({
       success: true,
-      message: `تم جلب ${savedAds.length} إعلان بنجاح`,
-      data: savedAds,
+      message: `تم جلب ${adsWithStatus.length} إعلان بنجاح`,
+      data: adsWithStatus, // إرجاع الإعلانات مباشرة من الموقع مع status
     });
   } catch (error) {
     next(errorHandler(500, `فشل في جلب الإعلانات: ${error.message}`));

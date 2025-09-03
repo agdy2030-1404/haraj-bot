@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -20,6 +20,13 @@ const AdsTable = () => {
 
   const [loadingAd, setLoadingAd] = useState(null);
   const [processingMessages, setProcessingMessages] = useState(null);
+const [hasData, setHasData] = useState(false);
+
+  useEffect(() => {
+    if (ads && ads.length > 0) {
+      setHasData(true);
+    }
+  }, [ads]);
 
   const handleUpdateAd = async (adId, e) => {
     e.stopPropagation();
@@ -83,7 +90,7 @@ const AdsTable = () => {
     }
   };
 
-  if (adsLoading) {
+  if (adsLoading && !hasData) {
     return (
       <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-xl p-6 border border-gray-100">
         <div className="animate-pulse">
@@ -98,7 +105,7 @@ const AdsTable = () => {
     );
   }
 
-  if (adsError) {
+  if (adsError && !hasData) {
     return (
       <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-xl p-6 border border-gray-100">
         <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl flex items-center">

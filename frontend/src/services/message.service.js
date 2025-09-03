@@ -28,22 +28,6 @@ const harajService = {
     return res.data;
   },
 
-  // جلب قوالب الحراج
-  getTemplates: async () => {
-    const res = await axios.get(`${API_URL}/api/message/templates`, {
-      withCredentials: true,
-    });
-    return res.data;
-  },
-
-  // إنشاء قالب جديد للحراج
-  createTemplate: async (templateData) => {
-    const res = await axios.post(`${API_URL}/api/message/templates`, templateData, {
-      withCredentials: true,
-    });
-    return res.data;
-  },
-
   // جلب إعلانات المستخدم من الحراج
   getUserAds: async () => {
     const res = await axios.get(`${API_URL}/api/message/ads`, {
@@ -52,25 +36,14 @@ const harajService = {
     return res.data;
   },
 
-   updateTemplate: async (templateId, templateData) => {
+  updateUnifiedMessage: async (messageContent) => {
     const res = await axios.put(
-      `${API_URL}/api/message/templates/${templateId}`,
-      templateData,
-      { withCredentials: true }
-    );
-    return res.data;
-  },
-
-  // حذف قالب الحراج
-  deleteTemplate: async (templateId) => {
-    const res = await axios.delete(
-      `${API_URL}/api/message/templates/${templateId}`,
+      `${API_URL}/api/message/unified-message`,
+      { message: messageContent },
       { withCredentials: true }
     );
     return res.data;
   },
 };
-
-
 
 export default harajService;

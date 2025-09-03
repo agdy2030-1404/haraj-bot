@@ -155,7 +155,6 @@ const DashboardComp = () => {
             <h2 className="text-xl font-bold text-gray-800 mb-4">
               إدارة الردود التلقائية
             </h2>
-            <AutoReplyManager />
           </div>
         </div>
 

@@ -7,9 +7,6 @@ const router = express.Router();
 router.get("/", verifyToken, msgController.getMessages);
 router.post("/process", verifyToken, msgController.processMessages);
 router.post("/process/:adId", verifyToken, msgController.processMessages);
-router.get("/templates", verifyToken, msgController.getTemplates);
-router.post("/templates", verifyToken, msgController.createTemplate);
-router.put("/templates/:id", verifyToken, msgController.updateTemplate); // إضافة التعديل
-router.delete("/templates/:id", verifyToken, msgController.deleteTemplate); // إضافة الحذف
+router.put("/unified-message", verifyToken, msgController.updateUnifiedMessage);
 
 export default router;
