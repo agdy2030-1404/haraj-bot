@@ -5,19 +5,17 @@ import botService from "../bot/bot.service.js";
 
 export const fetchUserAds = async (req, res, next) => {
   try {
-    // جلب الإعلانات من الموقع فقط
     const ads = await botService.getMyAds();
 
-    // إضافة status افتراضي إذا لم يكن موجوداً
     const adsWithStatus = ads.map(ad => ({
       ...ad,
-      status: ad.status || "active" // إضافة status افتراضي
+      status: ad.status || "active"
     }));
 
     res.status(200).json({
       success: true,
       message: `تم جلب ${adsWithStatus.length} إعلان بنجاح`,
-      data: adsWithStatus, // إرجاع الإعلانات مباشرة من الموقع مع status
+      data: adsWithStatus, 
     });
   } catch (error) {
     next(errorHandler(500, `فشل في جلب الإعلانات: ${error.message}`));
