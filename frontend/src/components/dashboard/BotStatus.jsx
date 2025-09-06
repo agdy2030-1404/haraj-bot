@@ -18,7 +18,7 @@ import {
 const BotStatus = () => {
   const dispatch = useDispatch();
   const { isRunning, isLoggedIn, loading, error } = useSelector(
-    (state) => state.bot // تغيير لـ bot
+    (state) => state.bot 
   );
   const [loginChecking, setLoginChecking] = useState(false);
   const [schedulerStatus, setSchedulerStatus] = useState({
@@ -43,18 +43,16 @@ const BotStatus = () => {
     };
   }, [dispatch]);
 
-  // في مكون BotStatus.jsx
   useEffect(() => {
     const interval = setInterval(() => {
       if (schedulerStatus.isRunning) {
         dispatch(getSchedulerStatus());
       }
-    }, 60000); // تحديث كل دقيقة
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [schedulerStatus.isRunning, dispatch]);
 
-  // وفي حالة تغيير حالة التحديث التلقائي
   useEffect(() => {
     dispatch(getSchedulerStatus());
   }, [isRunning, isLoggedIn, dispatch]);

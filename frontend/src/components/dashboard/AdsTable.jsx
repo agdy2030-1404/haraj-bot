@@ -76,7 +76,6 @@ const [hasData, setHasData] = useState(false);
         rtl: true,
       });
 
-      // إعادة تحميل الإعلانات بعد التحديث
       setTimeout(() => {
         dispatch(fetchAds());
       }, 5000);
