@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { fileURLToPath } from "url";
+import { executablePath } from "puppeteer"; // مهم
 import path from "path";
 import fs from "fs";
 
@@ -32,7 +33,8 @@ class botService {
   async initBrowser() {
     try {
       this.browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
+        executablePath: executablePath(), // يخلي Puppeteer يستعمل Chrome اللي نزلناه
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
