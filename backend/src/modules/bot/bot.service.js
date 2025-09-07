@@ -1,7 +1,6 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { fileURLToPath } from "url";
-import { executablePath } from "puppeteer"; // مهم
 import path from "path";
 import fs from "fs";
 
@@ -34,31 +33,25 @@ class botService {
     try {
       this.browser = await puppeteer.launch({
         headless: true,
-        executablePath: executablePath(), // يخلي Puppeteer يستعمل Chrome اللي نزلناه
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined, // يحدد الكروميوم المدمج
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
           "--disable-web-security",
           "--disable-features=IsolateOrigins,site-per-process",
-          "--window-size=1200,800",
         ],
         defaultViewport: null,
       });
 
       this.page = await this.browser.newPage();
 
+      // تعيين User-Agent
       await this.page.setUserAgent(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
       );
 
-      await this.page.setExtraHTTPHeaders({
-        "Accept-Language": "ar-SA,ar;q=0.9,en;q=0.8",
-      });
-
-      await this.loadCookies();
-
-      console.log("Browser initialized successfully");
-      return { success: true, message: "Browser initialized" };
+      return true;
     } catch (error) {
       console.error("Error initializing browser:", error);
       throw error;
