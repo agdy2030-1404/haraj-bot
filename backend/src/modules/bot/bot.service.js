@@ -32,8 +32,7 @@ class botService {
   async initBrowser() {
     try {
       this.browser = await puppeteer.launch({
-        headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined, // يحدد الكروميوم المدمج
+        headless: false,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
